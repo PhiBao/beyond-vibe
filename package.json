@@ -1,0 +1,15 @@
+{
+  "name": "beyond-vibe",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Ninety - a day-accounting agent for short-stay travel allowances. Monorepo: Sanity Studio (studio/) + Next.js app (web/).",
+  "scripts": {
+    "dev:web": "pnpm --dir web dev",
+    "dev:studio": "pnpm --dir studio dev",
+    "build:web": "pnpm --dir web build",
+    "build:studio": "pnpm --dir studio build",
+    "test": "pnpm --dir web test",
+    "typegen": "pnpm --dir studio typegen",
+    "seed": "pnpm --dir web seed"
+  }
+}
