@@ -28,7 +28,7 @@ Type **"three weeks on Tenerife, then an 8 hour airport layover where I never cl
 
 ![The agent](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/15-agent.png)
 
-It resolves to: Canary Islands, a carve-out, no days counted, 90% confident. Then an airport transit with **no place named**, no days counted, 100% confident. And in between, a leg it is only 50% sure about, so it refuses that one.
+It resolves to three separate reads: **Bulgaria by train — 10 days counted**, from the date-banded rule that opened its land crossings on 31 December 2024. An **airport transit with no place named — no days counted**, at 100%. And in between, a leg it is only about 50% sure about, so it refuses that one.
 
 That last behaviour is the whole point. In the middle of that sentence, *"flew to Paris 20 to 25 February"* is a fragment, and the agent says so rather than guessing. A chat completion would have answered it fluently and been indistinguishable from a correct answer.
 
