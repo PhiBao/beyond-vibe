@@ -35,6 +35,24 @@ export interface EvalCase {
    * has forgotten it.
    */
   asOf?: string
+  /**
+   * Precedents to graft onto the snapshot for this case only. Lets a case test
+   * the post-adjudication state without the eval depending on whatever happens
+   * to be in the live dataset.
+   */
+  precedents?: Array<{
+    id: string
+    key: string
+    label: string
+    subjectKind: 'presence_kind'
+    presenceKind: string
+    counted: boolean
+    rationale: string
+    window: {from: string; to?: string | null}
+    decidedBy: string
+    scope: 'presence_kind' | 'global'
+    status: 'active' | 'superseded'
+  }>
   /** Why a keyword search over the same documents struggles with this one. */
   whyHard: string
   itinerary: ItineraryInput
@@ -107,9 +125,14 @@ export const CASES: EvalCase[] = [
     title: 'A year of hops, one of them booked',
     question: 'I have eleven trips logged this year and one booked. Am I still legal?',
     whyHard:
-      'The answer is a function of eleven date ranges, two of which fall outside the area, one decided by a human ruling, and a rolling window that has to be evaluated day by day.',
+      'The answer is a function of eleven date ranges, two of which fall outside the area, one of which nobody has ruled on yet, and a rolling window that has to be evaluated day by day. The unresolved day is the trap: the headline count is a lower bound until a person decides it.',
     itinerary: YEAR_IN_EUROPE,
-    expect: {used: 74, breachDate: '2026-10-25', blameTrip: 'Barcelona — booked'},
+    expect: {
+      used: 73,
+      breachDate: '2026-10-26',
+      blameTrip: 'Barcelona — booked',
+      unresolvedDays: ['2026-09-10'],
+    },
     requiredSourceKeys: VISA,
   },
   {
@@ -238,6 +261,21 @@ export const CASES: EvalCase[] = [
     },
     expect: {used: 3},
     requiredSourceKeys: BORDER,
+    precedents: [
+      {
+        id: 'eval-precedent',
+        key: 'ruling:airport_transit_landside',
+        label: 'Ruled: a cleared transit counts',
+        subjectKind: 'presence_kind',
+        presenceKind: 'airport_transit_landside',
+        counted: true,
+        rationale: 'Injected by the evaluation to model the state after an adjudication.',
+        window: {from: '2026-01-01', to: null},
+        decidedBy: 'Evaluator',
+        scope: 'presence_kind',
+        status: 'active',
+      },
+    ],
   },
   {
     id: 'residence-permit-exempt',

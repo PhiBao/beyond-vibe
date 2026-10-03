@@ -564,17 +564,8 @@ export interface PrecedentSeedRecord {
  * than describing it. It is attributed to a person, dated, and scoped.
  */
 export const PRECEDENTS: PrecedentSeedRecord[] = [
-  {
-    key: 'airport-transit-landside-adjudicated',
-    label: 'Cleared transit counts as a day in the area',
-    subjectKind: 'presence_kind',
-    presenceKind: 'airport_transit_landside',
-    counted: true,
-    rationale:
-      'Adjudicated against the European Commission border-crossing guidance, which treats admission at an internal border as entry into the territory. Where a traveller lands, clears border control and re-departs the same airport, the day is charged. Scoped to future travel only: days already counted are not revisited.',
-    from: '2026-01-01',
-    decidedBy: 'Dataset curator',
-    scope: 'presence_kind',
-    sourceKeys: ['ec-border-crossing'],
-  },
+  // Intentionally empty. Precedents are produced by adjudicating a dispute, not
+  // authored by hand, so the public dataset ships with the desk genuinely open.
+  // A seeded ruling would silently pre-empt the very question the desk exists to
+  // ask.
 ]

@@ -23,7 +23,7 @@ Retrieval finds the sentences. It cannot join them to a calendar. Every question
 
 | # | Case | Evaluated as of | Expected | Structured answer | Correct | Sources retrieved |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | A year of hops, one of them booked | 2026-10-03 | 74 used · breach 2026-10-25 · blame Barcelona — booked | 74 used · breach 2026-10-25 · blame Barcelona — booked | yes | 1/2 |
+| 1 | A year of hops, one of them booked | 2026-10-03 | 73 used · breach 2026-10-26 · blame Barcelona — booked · 1 undecided | 73 used · 1 undecided · breach 2026-10-26 · blame Barcelona — booked | yes | 1/2 |
 | 2 | Three weeks in the Canaries | 2026-02-21 | 0 used | 0 used | yes | 1/1 |
 | 3 | A month in Dublin | 2026-10-03 | 0 used | 0 used | yes | none |
 | 4 | Flying into Sofia in February 2025 | 2025-02-11 | 0 used | 0 used | yes | 1/1 |
@@ -48,7 +48,7 @@ Retrieval finds the sentences. It cannot join them to a calendar. Every question
 
 ## What made each case hard
 
-- **A year of hops, one of them booked** — The answer is a function of eleven date ranges, two of which fall outside the area, one decided by a human ruling, and a rolling window that has to be evaluated day by day.
+- **A year of hops, one of them booked** — The answer is a function of eleven date ranges, two of which fall outside the area, one of which nobody has ruled on yet, and a rolling window that has to be evaluated day by day. The unresolved day is the trap: the headline count is a lower bound until a person decides it.
 - **Three weeks in the Canaries** — The Canaries are Spanish territory but outside the area. A country-level flag gets this wrong; it needs the territory modelled as a carve-out of Spain.
 - **A month in Dublin** — An EU member that opted out of the border and visa acquis. Country membership is not the same as area membership.
 - **Flying into Sofia in February 2025** — Bulgaria admitted land and sea crossings on 31 December 2024 but kept air borders external until 31 March 2025. The correct answer depends on the mode of arrival as well as the date.

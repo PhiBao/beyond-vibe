@@ -24,3 +24,6 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright raw video frames — the trimmed mp4 is kept
+web/demo/frames/

@@ -251,7 +251,10 @@ async function main() {
     })
   }
 
-  // Demo 2: a genuinely contested day, before the precedent takes effect.
+  // Demo 2: one genuinely contested day, sitting exactly on the limit. The
+  // traveller is at 90 of 90 with a planned landed transit in a few days, so
+  // whether that day counts decides whether they are legal. Ruling on it changes
+  // the headline number, which is the entire reason the desk exists.
   const demoBId = docId('itinerary', 'the-disputed-layover')
   await upsert({
     _id: demoBId,
@@ -260,14 +263,21 @@ async function main() {
     slug: {_type: 'slug', current: 'the-disputed-layover'},
     holder: {passport: 'IN', label: 'Priya', nationalityClass: ref('nationalityClass', 'visa-required')},
     allowance: ref('allowance', 'schengen-short-stay'),
-    summary: 'One layover, two official answers. Ninety will not pick a side for you.',
+    summary: 'Ninety of ninety, and one layover that decides it.',
     demo: true,
   })
 
-  for (const [key, label, arrive, depart, extra] of [
-    ['layover-trip', 'Via Paris', before(400), before(370), ''],
-    ['layover-transit', 'The layover itself', before(340), before(338), 'Cleared immigration, re-departed from the same airport'],
-  ] as const) {
+  const demoBStays: Array<[string, string, string, string, string, string, string]> = [
+    // key, label, territory, arrive, depart, mode, presenceRule
+    ['b-lisbon', 'Lisbon', 'pt', '2026-04-10', '2026-05-06', 'air', 'cleared-entry'],
+    ['b-berlin', 'Berlin', 'de', '2026-05-10', '2026-06-01', 'air', 'cleared-entry'],
+    ['b-milan', 'Milan', 'it', '2026-06-05', '2026-06-30', 'land', 'cleared-entry'],
+    ['b-prague', 'Prague', 'cz', '2026-07-04', '2026-07-20', 'land', 'cleared-entry'],
+    ['b-amsterdam', 'Amsterdam', 'nl', '2026-07-24', '2026-07-25', 'land', 'cleared-entry'],
+    ['b-layover', 'The layover', 'fr', '2026-10-06', '2026-10-06', 'air', 'airport-transit-landside'],
+  ]
+
+  for (const [key, label, territory, arrive, depart, mode, presenceRule] of demoBStays) {
     await upsert({
       _id: docId('trip', key),
       _type: 'trip',
@@ -277,19 +287,20 @@ async function main() {
         {
           _key: `${key}-0`,
           _type: 'stay',
-          territory: ref('territory', 'fr'),
+          territory: ref('territory', territory),
           arrive,
           depart,
-          mode: 'air',
-          note: extra || null,
-          presenceRule:
-            key === 'layover-transit'
-              ? ref('presenceRule', 'airport-transit-landside')
-              : ref('presenceRule', 'cleared-entry'),
+          mode,
+          note:
+            presenceRule === 'airport-transit-landside'
+              ? 'Cleared immigration, re-departed from the same airport'
+              : null,
+          presenceRule: ref('presenceRule', presenceRule),
         },
       ],
     })
   }
+
 
   // --- The open dispute behind demo 2 -------------------------------------
   const disputeId = docId('dispute', 'cleared-layover-counts')
@@ -323,10 +334,28 @@ async function main() {
   // Prune leftovers so the dataset converges on the authored corpus rather than
   // accumulating stale documents on every run.
   // A top-level `._id` projection yields plain strings, not objects.
-  const tripAndItineraryIds = await client.fetch<string[]>(
-    `*[_type == "trip" || _type == "itinerary"]._id`,
+  //
+  // Pruning covers every document type this seed owns, not just trips. An earlier
+  // run left a seeded precedent behind, which silently kept an "open" dispute
+  // resolved for days before anyone noticed.
+  const ownedTypes = [
+    'source',
+    'allowance',
+    'territory',
+    'nationalityClass',
+    'visaRegime',
+    'permitExemption',
+    'presenceRule',
+    'precedent',
+    'dispute',
+    'itinerary',
+    'trip',
+  ]
+  const existingIds = await client.fetch<string[]>(
+    `*[_type in $types]._id`,
+    {types: ownedTypes},
   )
-  const stale = (tripAndItineraryIds ?? []).filter(
+  const stale = (existingIds ?? []).filter(
     (id) => typeof id === 'string' && id.startsWith('ninety.') && !exists.has(id),
   )
 

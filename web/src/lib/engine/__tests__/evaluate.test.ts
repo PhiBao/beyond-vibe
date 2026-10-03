@@ -277,8 +277,27 @@ describe('how presence is charged', () => {
   })
 
   it('applies a human precedent to the same disputed day', () => {
+    // The shipped dataset ships with the desk open, so the post-adjudication
+    // state is constructed here rather than depended on from the corpus.
+    const snapshot = snap()
+    snapshot.precedents.push({
+      id: 'test-precedent',
+      key: 'ruling:airport_transit_landside',
+      label: 'Ruled: a cleared transit counts',
+      subjectKind: 'presence_kind',
+      presenceKind: 'airport_transit_landside',
+      counted: true,
+      rationale: 'Injected by the test to model the state after an adjudication.',
+      window: {from: '2026-01-01', to: null, note: null},
+      decidedBy: 'Tester',
+      decidedAt: '2026-01-01T00:00:00Z',
+      scope: 'presence_kind',
+      status: 'active',
+      sources: [],
+    })
+
     const v = evaluate(
-      snap(),
+      snapshot,
       traveller([
         {id: 'x', label: 'Transit', stays: [stay('x', 'Transit', 'FR', '2026-05-01', '2026-05-04', {presenceKind: 'airport_transit_landside'})]},
       ]),

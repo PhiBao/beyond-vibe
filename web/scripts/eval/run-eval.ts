@@ -184,7 +184,26 @@ async function main() {
 
   for (const testCase of CASES) {
     const caseAsOf = testCase.asOf ?? AS_OF
-    const verdict = evaluate(snapshot, testCase.itinerary, {asOf: caseAsOf})
+
+    // Graft any case-specific precedents onto a copy of the snapshot, so a case
+    // can describe the world it needs without the live dataset having to hold it.
+    const caseSnapshot: RuleSnapshot = testCase.precedents
+      ? {
+          ...snapshot,
+          precedents: [
+            ...testCase.precedents.map((precedent) => ({
+              ...precedent,
+              window: {...precedent.window, note: null},
+              decidedAt: `${precedent.window.from}T00:00:00Z`,
+              presenceKind: precedent.presenceKind,
+              sources: [],
+            })),
+            ...snapshot.precedents,
+          ],
+        }
+      : snapshot
+
+    const verdict = evaluate(caseSnapshot, testCase.itinerary, {asOf: caseAsOf})
 
     // --- Arm A: structured -------------------------------------------------
     let structuredCorrect = false

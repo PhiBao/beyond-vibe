@@ -597,9 +597,23 @@ function computeRepair(
     }
   }
 
-  const currentDeparture = ledger
-    .filter((d) => d.tripId === stay.tripId && d.territoryCode === stay.territoryCode)
-    .reduce((max, d) => (d.date > max ? d.date : max), firstExcess)
+  const sameStayDays = ledger.filter(
+    (d) => d.tripId === stay.tripId && d.territoryCode === stay.territoryCode,
+  )
+  const currentDeparture = sameStayDays.reduce((max, d) => (d.date > max ? d.date : max), firstExcess)
+
+  // A one-day stay has no length to remove. Saying "leave a day earlier" when the
+  // stay is a single day would be nonsense, so say what actually has to change.
+  if (sameStayDays.length <= 1) {
+    return {
+      kind: 'unresolved',
+      daysToRemove: excessCount,
+      instruction:
+        `You cross the limit on ${attribution.date}, and the day responsible is the ` +
+        `${attribution.blame[0]?.tripLabel ?? 'trip'} in ${stay.territoryName} — a single day. ` +
+        `There is nothing to shorten: either that day stops counting, or the trip has to go.`,
+    }
+  }
 
   // Under the Schengen convention the day of departure is not charged, so
   // leaving *on* the first excess day already removes it. When both edge days

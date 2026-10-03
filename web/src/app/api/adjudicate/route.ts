@@ -41,12 +41,30 @@ export async function POST(request: Request) {
   const dispute = await readClient.fetch<{
     _id: string
     question: string
+    subjectKind?: string
     presenceKind?: string | null
-    presenceRule?: {_id: string; kind: string; label: string}
+    presenceRule?: {_id: string; kind: string; label: string; sources?: unknown[] } | null
+    territory?: {_id: string} | null
     itinerary?: {_id: string} | null
-  }>(`*[_id == $id][0]{_id, question, presenceKind, presenceRule, "itinerary": itinerary}`, {
-    id: disputeId,
-  })
+    competingClaims?: unknown[]
+    ruling?: unknown
+    precedent?: unknown
+  }>(
+    // `presenceRule` must be dereferenced: projecting the field alone returns an
+    // unresolved {_ref}, which silently reads as "no presence rule".
+    `*[_id == $id][0]{
+      _id,
+      question,
+      presenceKind,
+      "presenceRule": presenceRule->{_id, kind, label, "sources": sources[]{"_ref": _ref}},
+      "territory": territory,
+      "itinerary": itinerary,
+      competingClaims,
+      ruling,
+      precedent
+    }`,
+    {id: disputeId},
+  )
 
   if (!dispute) {
     return NextResponse.json({error: 'No such dispute.'}, {status: 404})
@@ -89,38 +107,55 @@ export async function POST(request: Request) {
     decidedAt: new Date().toISOString(),
     scope: 'presence_kind',
     status: 'active',
-    sources: [],
+    // Inherit the presence rule's authorities. A precedent with no sources would
+    // violate its own schema and would be unusable in the ledger's citations.
+    sources: (dispute.presenceRule?.sources ?? []).map((ref, i) => ({
+      _type: 'sourceRef',
+      _key: `carried-${i}`,
+      _ref: (ref as {_ref: string})._ref,
+    })),
   })
 
   // Retire the ruling this one replaces, keeping the chain auditable rather than
   // overwriting history. Patched by id because the v8 client's query-selection
   // overload takes no separate params argument.
-  const older = await readClient.fetch<string[]>(
-    `*[_type == "precedent" && presenceKind == $kind && status == "active" && _id != $id]._id`,
+  const older = await readClient.fetch<Array<Record<string, unknown>>>(
+    `*[_type == "precedent" && presenceKind == $kind && status == "active" && _id != $id]`,
     {kind: presenceKind, id: precedentId},
   )
-  for (const id of older ?? []) {
-    try {
-      await client.patch(id, {set: {status: 'superseded'}})
-    } catch {
-      // A ruling that cannot retire its predecessor is still worth recording.
-    }
+  for (const doc of older ?? []) {
+    await client.createOrReplace({...doc, status: 'superseded'} as never)
   }
 
-  await client.patch(disputeId, {
-    set: {
-      status: 'adjudicated',
-      ruling: {
-        _type: 'ruling',
-        outcome,
-        rationale,
-        decidedBy: decidedBy.trim(),
-        decidedAt: new Date().toISOString(),
-        scope: 'presence_kind',
-      },
-      precedent: {_type: 'reference', _ref: precedentId},
+  // Full replace rather than a patch: a partial `set` on a document with nested
+  // typed objects silently no-oped in production, which left the dispute open
+  // while the precedent it pointed at had already been written.
+  await client.createOrReplace({
+    _id: disputeId,
+    _type: 'dispute',
+    question: dispute.question,
+    subjectKind: dispute.subjectKind ?? 'presence_kind',
+    presenceRule: dispute.presenceRule?._id
+      ? {_type: 'reference', _ref: dispute.presenceRule._id}
+      : undefined,
+    territory: dispute.territory?._id
+      ? {_type: 'reference', _ref: dispute.territory._id}
+      : undefined,
+    itinerary: dispute.itinerary?._id
+      ? {_type: 'reference', _ref: dispute.itinerary._id}
+      : undefined,
+    competingClaims: dispute.competingClaims ?? [],
+    status: 'adjudicated',
+    ruling: {
+      _type: 'ruling',
+      outcome,
+      rationale,
+      decidedBy: decidedBy.trim(),
+      decidedAt: new Date().toISOString(),
+      scope: 'presence_kind',
     },
-  })
+    precedent: {_type: 'reference', _ref: precedentId},
+  } as never)
 
   // Recompute everything from Sanity, because that is the only thing the
   // interface is allowed to show.
