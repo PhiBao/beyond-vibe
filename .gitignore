@@ -1,29 +1,17 @@
 node_modules/
-.pnpm-store/
 .next/
 out/
 dist/
-build/
-.vercel/
-.wrangler/
-.sanity/
 *.tsbuildinfo
-next-env.d.ts
 
-# Secrets — never commit
+# Secrets — never committed.
 .env
 .env.local
 .env*.local
-.env.deployed
 
-# logs
-*.log
-npm-debug.log*
-yarn-error.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Playwright raw video frames — the trimmed mp4 is kept
+# Playwright raw video frames; the trimmed mp4 is kept.
 web/demo/frames/
+
+# Sanity CLI local state
+.studio/
+.sanity/*.json

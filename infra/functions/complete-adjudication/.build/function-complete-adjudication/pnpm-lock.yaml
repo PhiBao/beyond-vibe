@@ -1,0 +1,139 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@sanity/client':
+        specifier: ^8.9.0
+        version: 8.9.0
+      '@sanity/functions':
+        specifier: ^1.8.1
+        version: 1.8.1(@aws-lite/client@0.23.7)(@aws-lite/dynamodb@0.3.9)(@aws-lite/lambda@0.1.5)(@aws-lite/sns@0.0.8)(@aws-lite/sqs@0.2.4)
+
+packages:
+
+  '@aws-lite/client@0.23.7':
+    resolution: {integrity: sha512-Qo/lq96DS8UOg1yFccolMuKG1hKnNStXVYhzVl4tZk/7m+OtANVk2JB8iuYJISc4DF7Dm3Qy+e91L6BGJ1dfkw==}
+    engines: {node: '>=16'}
+
+  '@aws-lite/dynamodb@0.3.9':
+    resolution: {integrity: sha512-jrMAWwxoAMVJ3z0/mI/GzPM5AfGmH+xzTpNIbjg3+2WdYJRqvIf8025XJdCDtS9/4x8zogdchEp3ZelXnwYyqw==}
+    engines: {node: '>=16'}
+
+  '@aws-lite/lambda@0.1.5':
+    resolution: {integrity: sha512-Sa6AxBQwzqGsUr2ifxcpAvFlTkoDwIQIYgcEFVQ+0qKeV9ci+ggsOOSRGBxrGEdRsnQxUsQ2x0ES/29c8crzQw==}
+    engines: {node: '>=16'}
+
+  '@aws-lite/sns@0.0.8':
+    resolution: {integrity: sha512-MIzHe66kLNyzPFY/DX30uN7DlVQsnBiHPYbq/7syNWuoYSG8bkWuUX2CVIuSL7Ji5jaLpQ4lf8/VQ+SiAeoIZA==}
+    engines: {node: '>=16'}
+
+  '@aws-lite/sqs@0.2.4':
+    resolution: {integrity: sha512-a1M3HDdkNE/xJfASlfisAaZ8XF6FpvoJbJsH/gr6pogEFWgNQyvmPVNRElnDY7JW3ee82sEOkMukYRdAbjytNQ==}
+    engines: {node: '>=16'}
+
+  '@sanity/client@8.9.0':
+    resolution: {integrity: sha512-V6kFNH6xvz29ot66zTVVyzZ34dIGzVJHzQJXEV2ljGVZEelHRoMayhErsTDac/ZR7ej8Spz39qEMYCaJWg176g==}
+    engines: {node: '>=22.12.0'}
+
+  '@sanity/functions@1.8.1':
+    resolution: {integrity: sha512-HZfnnDuzTwfavAzjB8Ita6GGnM0owXnNSuXTyiUMkMyhsHolyFrPtOlCBlqdyhXmOrtPiyZ6UmbIWEw8FNJgKQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@aws-lite/client': ^0.23.6
+      '@aws-lite/dynamodb': ^0.3.9
+      '@aws-lite/lambda': ^0.1.5
+      '@aws-lite/sns': ^0.0.8
+      '@aws-lite/sqs': ^0.2.4
+
+  aws4@1.13.2:
+    resolution: {integrity: sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==}
+
+  eventsource-parser@4.1.1:
+    resolution: {integrity: sha512-zaWNqeSLeyzEAAt2Q6aDBRDRk/VnPmsKqvToyGvv6aahvLv71A4Jw7jG93Hckf11zXurbqgsffvpSgKPoeU1Qw==}
+    engines: {node: '>=22.12'}
+
+  eventsource@5.1.2:
+    resolution: {integrity: sha512-VJnwqqp+fOT3WDkjnUy49Zuyh48+kH0JdJApZkslrRQyx35zIZJeJYJl0+a+LrTzh5TFv6MdmXnBDv71UXFyWQ==}
+    engines: {node: '>=22.12.0'}
+
+  get-it@9.6.1:
+    resolution: {integrity: sha512-uxMgcolbhJTz8f/cOHLcgde3A0gwqv5p6m8OJ2WJqn7NBi79krofZdp95FD0+7N9UUpmAe76vIEX3kDFijRahg==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      vitest: '>=2.0.0'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+
+  obug@3.0.0:
+    resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
+    engines: {node: '>=12.20.0'}
+
+  rxjs@7.8.2:
+    resolution: {integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  undici@7.30.0:
+    resolution: {integrity: sha512-dkrQXeHSaoamnItlYbmzG0wFYrM0ZwDxCIg0A7aKjTyyhh9svRzCNFEzV+Vm05/yehjCzjDZ31KXfGEjYSztDQ==}
+    engines: {node: '>=20.18.1'}
+
+snapshots:
+
+  '@aws-lite/client@0.23.7':
+    dependencies:
+      aws4: 1.13.2
+
+  '@aws-lite/dynamodb@0.3.9': {}
+
+  '@aws-lite/lambda@0.1.5': {}
+
+  '@aws-lite/sns@0.0.8': {}
+
+  '@aws-lite/sqs@0.2.4': {}
+
+  '@sanity/client@8.9.0':
+    dependencies:
+      eventsource: 5.1.2
+      get-it: 9.6.1
+      obug: 3.0.0
+      rxjs: 7.8.2
+    transitivePeerDependencies:
+      - vitest
+
+  '@sanity/functions@1.8.1(@aws-lite/client@0.23.7)(@aws-lite/dynamodb@0.3.9)(@aws-lite/lambda@0.1.5)(@aws-lite/sns@0.0.8)(@aws-lite/sqs@0.2.4)':
+    dependencies:
+      '@aws-lite/client': 0.23.7
+      '@aws-lite/dynamodb': 0.3.9
+      '@aws-lite/lambda': 0.1.5
+      '@aws-lite/sns': 0.0.8
+      '@aws-lite/sqs': 0.2.4
+
+  aws4@1.13.2: {}
+
+  eventsource-parser@4.1.1: {}
+
+  eventsource@5.1.2:
+    dependencies:
+      eventsource-parser: 4.1.1
+
+  get-it@9.6.1:
+    dependencies:
+      undici: 7.30.0
+
+  obug@3.0.0: {}
+
+  rxjs@7.8.2:
+    dependencies:
+      tslib: 2.8.1
+
+  tslib@2.8.1: {}
+
+  undici@7.30.0: {}
