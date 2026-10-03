@@ -26,6 +26,7 @@ import type {
   PermitExemptionSnapshot,
   RuleSnapshot,
   StayInput,
+  WindowSnapshot_,
 } from './types'
 
 const DEFAULT_PRESENCE_KIND = 'cleared_entry'
@@ -258,11 +259,16 @@ export function evaluate(
   const remaining = limit - usedAtAsOf
 
   // The peak window is the one that actually decides legality.
-  let peak: {from: IsoDate; to: IsoDate; daysUsed: number} | null = null
+  let peak: WindowSnapshot_ | null = null
   for (const entry of ledger) {
     const daysUsed = countInWindow(entry.date)
     if (!peak || daysUsed > peak.daysUsed) {
-      peak = {from: addDays(entry.date, -(windowDays - 1)), to: entry.date, daysUsed}
+      peak = {
+        from: addDays(entry.date, -(windowDays - 1)),
+        to: entry.date,
+        daysUsed,
+        limitDays: limit,
+      }
     }
   }
 
@@ -346,7 +352,10 @@ function classifyDay(
 ): DayClassification {
   const territory = territoryByCode(snapshot, chosen.territoryCode)!
 
-  const base: Omit<DayClassification, 'verdict' | 'charged'> = {
+  const base: Omit<
+    DayClassification,
+    'verdict' | 'charged' | 'reason' | 'disputed' | 'alternative' | 'byPrecedent'
+  > = {
     date: day,
     territoryCode: territory.code,
     territoryName: territory.name,
@@ -481,18 +490,28 @@ function attribute(
   const excessCount = daysUsed - limit
   const excess = inWindow.slice(Math.max(0, inWindow.length - excessCount))
 
-  const byTrip = new Map<string, {tripId: string | null; tripLabel: string | null; days: IsoDate[]}>()
+  const byTrip = new Map<
+    string,
+    {tripId: string | null | undefined; tripLabel: string | null | undefined; days: IsoDate[]}
+  >()
   for (const day of excess) {
     const key = day.tripId ?? '__none__'
-    const bucket = byTrip.get(key) ?? {tripId: day.tripId, tripLabel: day.tripLabel, days: []}
+    let bucket = byTrip.get(key)
+    if (!bucket) {
+      bucket = {tripId: day.tripId, tripLabel: day.tripLabel, days: []}
+      byTrip.set(key, bucket)
+    }
     bucket.days.push(day.date)
-    byTrip.set(key, bucket)
   }
 
   return {
     date: breachDate,
     count: daysUsed,
-    blame: [...byTrip.values()],
+    blame: [...byTrip.values()].map((b) => ({
+      tripId: b.tripId ?? null,
+      tripLabel: b.tripLabel ?? null,
+      days: b.days,
+    })),
   }
 }
 

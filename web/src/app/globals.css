@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
+/*
+ * Ninety is a counting instrument. The palette is deliberately narrow: one warm
+ * colour means "this day was charged to you", one red means "this is the day it
+ * broke", one violet means "a person has to decide this". Nothing else competes.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0a0a0b;
+  --panel: #131316;
+  --panel-2: #1a1a1f;
+  --line: #26262c;
+  --line-soft: #1e1e23;
+  --text: #eeeef2;
+  --muted: #8a8a95;
+  --faint: #5c5c66;
+
+  --charged: #ff7a2f;
+  --danger: #f0433c;
+  --unresolved: #a78bfa;
+  --clear: #3a3a44;
+  --outside: #1c1c22;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--ink);
+  --color-foreground: var(--text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  /* Next.js 16 no longer overrides this; set it deliberately. */
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+
+.mono {
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ledger bars. Kept in CSS so the marks stay crisp at any density. */
+.mark {
+  display: block;
+  flex: 1 1 0;
+  min-width: 1px;
+  border-radius: 1px;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+/* Legend and table swatches are fixed-size, not flex children. */
+.swatch {
+  display: block;
+  width: 1rem;
+  height: 0.625rem;
+  flex: none;
+  border-radius: 1px;
+}
+.mark-charged {
+  background: var(--charged);
+}
+.mark-clear {
+  background: var(--clear);
+}
+.mark-outside {
+  background: var(--outside);
+  box-shadow: inset 0 0 0 1px #23232a;
+}
+.mark-unresolved {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--unresolved);
+}
+.mark-breach {
+  background: var(--danger);
+}
+
+.row-hover:hover .mark {
+  opacity: 0.75;
+}
+.row-hover:hover .mark:hover,
+.mark[data-selected="true"] {
+  transform: scaleX(1.9);
+  opacity: 1;
+}
+
+::selection {
+  background: var(--charged);
+  color: #0a0a0b;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--charged);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark,
+  html {
+    transition: none !important;
+  }
 }
