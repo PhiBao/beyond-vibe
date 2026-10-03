@@ -1,124 +1,152 @@
 import {NextResponse} from 'next/server'
-import {createMCPClient} from '@ai-sdk/mcp'
-import {anthropic} from '@ai-sdk/anthropic'
-import {convertToModelMessages, generateText, stepCountIs, type UIMessage} from 'ai'
-import {contextToken, contextUrl} from '@/lib/sanity/context'
+import {resolveDescription} from '@/lib/agent/resolve'
+import {TypesafeUnavailable} from '@/lib/agent/typesafe'
 import {evaluate} from '@/lib/engine'
 import type {ItineraryInput} from '@/lib/engine/types'
+import {contextToken, contextUrl} from '@/lib/sanity/context'
 import {loadSnapshot} from '@/lib/sanity/snapshot'
+import {today} from '@/lib/sanity/verdict'
 
 /**
  * The agent.
  *
- * One hard rule, enforced by the prompt and by the architecture: the model may
- * retrieve, classify and explain, but it may never state a day count. Anything
- * numeric comes from `evaluate`, the same deterministic engine the interface
- * uses. That is the difference between an assistant that sounds careful and one
- * that is.
+ * Someone describes a trip the way they would to a friend. The agent works out
+ * what that trip is, and the deterministic engine works out what it costs.
+ *
+ * The division is not stylistic. Resolving "three weeks on Tenerife" to
+ * territory `es-canary` is a semantic judgment, and it is the one part of this
+ * system that genuinely needs a model. Everything downstream of it — which
+ * bands apply, whether those days charge, when the window fills, what to change —
+ * is arithmetic over structured content, and belongs in code.
+ *
+ * So the model is given exactly one job and no authority over any number:
+ *
+ *   traveller's words
+ *        │
+ *        ├─ Sanity Context (MCP)  ── the candidate set, retrieved, never invented
+ *        │
+ *        ├─ TypeSafe System One   ── typed classification + calibrated confidence
+ *        │                            no free text, no arithmetic
+ *        │
+ *        └─ deterministic engine  ── every number in the answer
  */
 
-const SYSTEM = `You are the reasoning layer of Ninety, which computes short-stay travel allowances.
-
-Rules you must follow:
-1. Never state a day count, a total, a remaining balance, or the date on which a limit is crossed. You have no arithmetic authority. A tool result already contains every number you are allowed to report.
-2. Answer only from the Sanity Context endpoint. If the context does not contain the rule, say that the rule is not in the corpus and stop.
-3. When two sources conflict, do not choose. Say they conflict, present both, and say that a person has to rule.
-4. Cite the source title for every claim you make.
-5. If the traveller's passport or status is outside the corpus, say Ninety will not guess.
-
-Be brief and concrete. A traveller is reading this on a phone.`
-
-const MODEL_ID = process.env.NINETY_MODEL ?? 'claude-sonnet-4-5'
-
-function missing(what: string, hint: string) {
-  return NextResponse.json(
-    {ok: false as const, error: 'not_configured', what, hint},
-    {status: 503},
-  )
-}
+const MAX_INPUT = 4_000
 
 export async function POST(request: Request) {
-  if (!contextToken() || !contextUrl()) {
-    return missing(
-      'Sanity Context',
-      'Set SANITY_CONTEXT_TOKEN to an organisation API token with Context Viewer permissions.',
-    )
-  }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return missing(
-      'the model',
-      'Set ANTHROPIC_API_KEY. Ninety will not answer from a corpus without a reasoner in front of it.',
-    )
-  }
-
-  let body: {messages?: UIMessage[]; itinerary?: ItineraryInput; asOf?: string}
+  let body: {text?: string; passport?: string; asOf?: string; permitExemptionId?: string | null}
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ok: false, error: 'Expected a JSON body.'}, {status: 400})
   }
 
-  const messages = body.messages ?? []
-  if (messages.length === 0) {
-    return NextResponse.json({ok: false, error: 'No question supplied.'}, {status: 400})
-  }
-
-  // The engine runs first so the model has an authoritative number to defer to.
-  let verdict: Awaited<ReturnType<typeof evaluate>> | null = null
-  if (body.itinerary) {
-    const {snapshot} = await loadSnapshot()
-    verdict = evaluate(snapshot, body.itinerary, {asOf: body.asOf})
-  }
-
-  const mcp = await createMCPClient({
-    transport: {
-      type: 'http',
-      url: contextUrl() as string,
-      headers: {Authorization: `Bearer ${contextToken()}`},
-    },
-  })
-
-  try {
-    const tools = await mcp.tools()
-    const result = await generateText({
-      model: anthropic(MODEL_ID),
-      system: verdict ? `${SYSTEM}\n\nThe deterministic engine has already run. Its verdict is authoritative and is the only source of numbers:\n${JSON.stringify(engineDigest(verdict))}` : SYSTEM,
-      messages: await convertToModelMessages(messages),
-      tools,
-      stopWhen: stepCountIs(8),
-    })
-
-    return NextResponse.json({
-      ok: true as const,
-      answer: result.text,
-      toolsUsed: Object.keys(result.steps ?? []).length,
-      verdict,
-    })
-  } catch (error) {
+  const text = (body.text ?? '').trim()
+  if (!text) {
     return NextResponse.json(
-      {ok: false as const, error: 'agent_failed', message: (error as Error).message},
+      {ok: false, error: 'Describe a trip in your own words.'},
+      {status: 400},
+    )
+  }
+  if (text.length > MAX_INPUT) {
+    return NextResponse.json(
+      {ok: false, error: `Keep it under ${MAX_INPUT} characters.`},
+      {status: 400},
+    )
+  }
+
+  // Report missing configuration honestly instead of failing obscurely later.
+  if (!contextToken() || !contextUrl()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'not_configured',
+        what: 'Sanity Context',
+        hint: 'Set SANITY_CONTEXT_TOKEN to an organisation API token with Context Viewer permissions.',
+      },
+      {status: 503},
+    )
+  }
+
+  let resolution
+  try {
+    resolution = await resolveDescription(text)
+  } catch (error) {
+    if (error instanceof TypesafeUnavailable) {
+      return NextResponse.json(
+        {ok: false, error: 'not_configured', what: 'the classifier', hint: error.message},
+        {status: 503},
+      )
+    }
+    return NextResponse.json(
+      {ok: false, error: 'agent_failed', message: (error as Error).message},
       {status: 502},
     )
-  } finally {
-    await mcp.close().catch(() => undefined)
   }
+
+  if (resolution.problem) {
+    return NextResponse.json({ok: false, error: 'no_dates', message: resolution.problem}, {status: 422})
+  }
+
+  // The engine takes over here. It has no idea any of this was described in
+  // English; it sees an itinerary and a rule snapshot, which is exactly the
+  // input it is tested against.
+  const asOf = body.asOf ?? today()
+  const itinerary: ItineraryInput = {
+    holder: {passport: (body.passport ?? 'US').toUpperCase(), permitExemptionId: body.permitExemptionId ?? null},
+    trips: resolution.stays.map((s) => ({
+      id: `described-${s.index}`,
+      label: s.territoryName,
+      stays: [
+        {
+          tripId: `described-${s.index}`,
+          tripLabel: s.territoryName,
+          territoryCode: s.territoryCode,
+          arrive: s.arrive,
+          depart: s.depart,
+          presenceKind: s.presenceKind,
+          mode: inferMode(s.contextText),
+        },
+      ],
+    })),
+  }
+
+  const {snapshot} = await loadSnapshot()
+  const verdict = evaluate(snapshot, itinerary, {asOf})
+
+  // Whether a stay's days are charged is the engine's call, not the classifier's.
+  //
+  // The classifier was asked "would this person be present somewhere that counts
+  // against the allowance", which it answers from the description alone — so for
+  // Sofia by train in February 2025 it said no, because it does not know that
+  // Bulgaria's land crossings were internal by then. Showing that beside a verdict
+  // that charges ten days would put two contradicting labels on one screen, so the
+  // label is read back out of the ledger the engine actually produced.
+  const chargedByCode = new Map<string, number>()
+  for (const day of verdict.ledger) {
+    if (!day.territoryCode) continue
+    if (day.charged) chargedByCode.set(day.territoryCode, (chargedByCode.get(day.territoryCode) ?? 0) + 1)
+  }
+
+  return NextResponse.json({
+    ok: true,
+    asOf,
+    resolution: {
+      stays: resolution.stays.map((stay) => ({
+        ...stay,
+        countsTowardsAllowance: chargedByCode.get(stay.territoryCode) ?? 0,
+      })),
+      corpusFrom: resolution.corpusFrom,
+      model: resolution.model,
+      usage: resolution.usage,
+    },
+    verdict,
+  })
 }
 
-/** The slice of the verdict the model is allowed to see. */
-function engineDigest(verdict: ReturnType<typeof evaluate>) {
-  if (!verdict.ok) {
-    return {refused: verdict.refusal, instruction: 'Report the refusal. Do not offer a number.'}
-  }
-  return {
-    used: verdict.used,
-    limitDays: verdict.limitDays,
-    windowDays: verdict.windowDays,
-    breachDate: verdict.attribution?.date ?? null,
-    breachCount: verdict.attribution?.count ?? null,
-    blamedTrips: verdict.attribution?.blame.map((b) => b.tripLabel) ?? [],
-    lastPermissibleDay: verdict.lastPermissibleDay,
-    unresolvedDays: verdict.unresolvedDays,
-    repair: verdict.repair?.instruction ?? null,
-    warnings: verdict.warnings,
-  }
+/** The words "flew" or "train" are the only signal about the crossing mode. */
+function inferMode(text: string): 'air' | 'land' | 'sea' {
+  if (/\b(flight|flew|fly|plane|air|aeroplane|airport)\b/.test(text)) return 'air'
+  if (/\b(ship|ferry|boat|sea|sail|cruise)\b/.test(text)) return 'sea'
+  return 'land'
 }

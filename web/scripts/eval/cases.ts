@@ -100,7 +100,7 @@ export const YEAR_IN_EUROPE: ItineraryInput = {
   trips: [
     trip('lisbon', 'Lisbon', [stay('lisbon', 'Lisbon', 'PT', '2026-03-12', '2026-03-26', {mode: 'air'})]),
     trip('seville', 'Seville day trip', [stay('seville', 'Seville day trip', 'ES', '2026-04-06', '2026-04-10')]),
-    trip('canaries', 'Canary Islands', [stay('canaries', 'Canary Islands', 'es-canary', '2026-04-14', '2026-04-26', {mode: 'air'})]),
+    trip('canaries', 'Canary Islands', [stay('canaries', 'Canary Islands', 'XCI', '2026-04-14', '2026-04-26', {mode: 'air'})]),
     trip('dublin', 'Dublin', [stay('dublin', 'Dublin', 'IE', '2026-04-30', '2026-05-08', {mode: 'air'})]),
     trip('prague', 'Prague', [stay('prague', 'Prague', 'CZ', '2026-05-14', '2026-05-29')]),
     trip('vienna-spring', 'Vienna', [stay('vienna-spring', 'Vienna', 'AT', '2026-06-05', '2026-06-19')]),
@@ -144,7 +144,7 @@ export const CASES: EvalCase[] = [
       'The Canaries are Spanish territory but outside the area. A country-level flag gets this wrong; it needs the territory modelled as a carve-out of Spain.',
     itinerary: {
       holder: holder('US'),
-      trips: [trip('can', 'Canaries', [stay('can', 'Canaries', 'es-canary', '2026-02-01', '2026-02-21', {mode: 'air'})])],
+      trips: [trip('can', 'Canaries', [stay('can', 'Canaries', 'XCI', '2026-02-01', '2026-02-21', {mode: 'air'})])],
     },
     expect: {used: 0},
     requiredSourceKeys: HISTORY,
@@ -214,6 +214,20 @@ export const CASES: EvalCase[] = [
     },
     expect: {used: 14},
     requiredSourceKeys: HISTORY,
+  },
+  {
+    id: 'iceland-is-not-schengen',
+    title: 'A week in Reykjavík',
+    question: 'I was in Iceland for a week. Does that eat my allowance?',
+    whyHard:
+      'Iceland is in the EEA but not in the Schengen Area. Free movement of people and the Schengen acquis are different agreements, and conflating them charges Iceland days. This case exists because the corpus got it wrong first.',
+    itinerary: {
+      holder: holder('US'),
+      trips: [trip('rey', 'Reykjavík', [stay('rey', 'Reykjavík', 'IS', '2026-05-04', '2026-05-09', {mode: 'air'})])],
+    },
+    asOf: '2026-05-09',
+    expect: {used: 0},
+    requiredSourceKeys: EU,
   },
   {
     id: 'airside-transit-is-free',

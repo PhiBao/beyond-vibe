@@ -163,7 +163,25 @@ export const TERRITORIES: TerritoryRecord[] = [
   {key: 'no', name: 'Norway', code: 'NO', kind: 'state', accessBands: FULL(NORDIC_1995, 'Nordic member; not an EU member.')},
   {key: 'se', name: 'Sweden', code: 'SE', kind: 'state', accessBands: FULL(NORDIC_1995, 'Nordic member.')},
   {key: 'fi', name: 'Finland', code: 'FI', kind: 'state', accessBands: FULL(NORDIC_1995, 'Nordic member.')},
-  {key: 'is', name: 'Iceland', code: 'IS', kind: 'state', accessBands: FULL('2001-03-25', 'Joined the area in 2001; not an EU member.')},
+  {
+    key: 'is',
+    name: 'Iceland',
+    code: 'IS',
+    // Not a Schengen member. It is EEA, which is a different agreement covering
+    // free movement of people — not the Schengen acquis, which covers external
+    // border and visa rules. Conflating the two charges Iceland days against
+    // 90/180, which is wrong and a common mistake.
+    kind: 'external',
+    accessBands: [
+      {
+        from: '2001-03-25',
+        counted: false,
+        basis:
+          'Iceland is in the EEA but has not joined the Schengen Area, so Schengen external border and visa rules do not apply at its borders and Icelandic days do not count against 90/180.',
+        sourceKeys: ['schengen-wiki-membership'],
+      },
+    ],
+  },
   {key: 'ch', name: 'Switzerland', code: 'CH', kind: 'state', accessBands: FULL('2008-03-01', 'Applied the full acquis in 2008; not an EU member.')},
   {key: 'gr', name: 'Greece', code: 'GR', kind: 'state', accessBands: FULL('2000-01-01', 'Applies the Schengen acquis; signed the agreement in 1985.')},
 

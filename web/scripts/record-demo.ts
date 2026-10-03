@@ -88,15 +88,30 @@ async function main() {
   await shot('06-own-history')
   console.log('  evaluated a hand-typed history')
 
+  // The agent: describe a trip in plain language.
+  await page.locator('#own').scrollIntoViewIfNeeded()
+  await page.waitForTimeout(900)
+  await page.fill(
+    'textarea[placeholder*="Sofia"]',
+    'Took the train into Sofia 1 to 11 February 2025, then flew to Paris 20 to 25 February 2025, then an 8 hour airport layover on 3 June 2026 where I never cleared immigration.',
+  )
+  await page.getByRole('button', {name: 'Work it out', exact: true}).click()
+  await page.waitForTimeout(16000)
+  await shot('15-agent')
+  console.log('  described a trip in plain language')
+
+  await page.locator('#desk').scrollIntoViewIfNeeded()
+  await page.waitForTimeout(800)
+
   // The contested example.
   await page.click('text=The disputed layover')
   await page.waitForTimeout(2500)
-  await shot('07-disputed-layover')
+  await shot('17-disputed-layover')
 
   // The desk.
   await page.locator('#desk').scrollIntoViewIfNeeded()
   await page.waitForTimeout(1000)
-  await shot('08-the-desk')
+  await shot('18-the-desk')
 
   // Adjudicate. This is the moment worth recording: a person resolves a genuine
   // disagreement and the count changes in front of you. The dataset is reset
@@ -109,12 +124,12 @@ async function main() {
   if (await nameField.count()) {
     await nameField.fill('Ada')
     await page.waitForTimeout(600)
-    await shot('09-before-ruling')
+    await shot('19-before-ruling')
     await page.getByRole('button', {name: 'It counts', exact: true}).click()
     await page.waitForTimeout(7000)
     const after = await page.locator('[role="meter"]').first().getAttribute('aria-label')
     const verdictAfter = await verdictHeadline(page)
-    await shot('10-after-ruling')
+    await shot('20-after-ruling')
     console.log(`  meter  before: ${before}   after: ${after}`)
     console.log(`  verdict before: ${verdictBefore}`)
     console.log(`  verdict after : ${verdictAfter}`)
@@ -122,7 +137,7 @@ async function main() {
 
   await page.locator('#ledger').scrollIntoViewIfNeeded()
   await page.waitForTimeout(1400)
-  await shot('11-ledger-after-ruling')
+  await shot('21-ledger-after-ruling')
 
   await page.waitForTimeout(1200)
   const video = page.video()

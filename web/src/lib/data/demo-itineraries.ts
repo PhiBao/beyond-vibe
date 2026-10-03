@@ -45,7 +45,7 @@ export const LOCAL_ITINERARIES: LocalItinerary[] = [
       trips: [
         {id: 'lisbon', label: 'Lisbon', stays: [stay('lisbon', 'Lisbon', 'PT', '2026-03-12', '2026-03-26', 'air')]},
         {id: 'seville', label: 'Seville day trip', stays: [stay('seville', 'Seville day trip', 'ES', '2026-04-06', '2026-04-10')]},
-        {id: 'canaries', label: 'Canary Islands', stays: [stay('canaries', 'Canary Islands', 'es-canary', '2026-04-14', '2026-04-26', 'air')]},
+        {id: 'canaries', label: 'Canary Islands', stays: [stay('canaries', 'Canary Islands', 'XCI', '2026-04-14', '2026-04-26', 'air')]},
         {id: 'dublin', label: 'Dublin', stays: [stay('dublin', 'Dublin', 'IE', '2026-04-30', '2026-05-08', 'air')]},
         {id: 'prague', label: 'Prague', stays: [stay('prague', 'Prague', 'CZ', '2026-05-14', '2026-05-29')]},
         {id: 'vienna-spring', label: 'Vienna', stays: [stay('vienna-spring', 'Vienna', 'AT', '2026-06-05', '2026-06-19')]},

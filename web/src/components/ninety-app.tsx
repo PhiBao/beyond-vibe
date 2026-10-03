@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import {useState} from 'react'
 import {CustomTrips} from '@/components/custom-trips'
+import {AgentAsk} from '@/components/agent-ask'
 import {DayDetail} from '@/components/day-detail'
 import {DayLedger} from '@/components/day-ledger'
 import {DisputeDesk, type DisputeView} from '@/components/dispute-desk'
@@ -182,6 +183,16 @@ function Inner({
               setError(null)
             }}
             onError={setError}
+          />
+        </div>
+
+        <div className="mt-5">
+          <AgentAsk
+            onResult={(next, label) => {
+              setCustom({verdict: next, label})
+              setSelectedDate(null)
+              setError(null)
+            }}
           />
         </div>
       </section>

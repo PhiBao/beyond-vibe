@@ -159,6 +159,35 @@ export async function probeContext(): Promise<ContextProbe> {
   }
 }
 
+/**
+ * Run a GROQ query through the Context endpoint rather than the Content Lake API.
+ *
+ * This is the retrieval path the agent uses, so that what it knows comes from
+ * the same hosted MCP endpoint an evaluator would point their own agent at.
+ */
+export async function groqViaContext(
+  query: string,
+): Promise<{ok: true; data: unknown} | ContextUnavailable> {
+  const result = await callTool('tools/call', {
+    name: 'groq_query',
+    arguments: {query},
+  })
+  if (!result.ok) return result
+
+  const text = textOf(result.data)
+  try {
+    const parsed = JSON.parse(text) as {result?: unknown}
+    return {ok: true, data: parsed.result}
+  } catch {
+    // Some responses are the value itself rather than an envelope.
+    try {
+      return {ok: true, data: JSON.parse(text)}
+    } catch {
+      return {ok: false, reason: 'error', message: `Context returned unparseable output: ${text.slice(0, 200)}`}
+    }
+  }
+}
+
 function countResult(text: string): number | null {
   const match = text.match(/"resultCount"\s*:\s*(\d+)/)
   if (match) return Number(match[1])

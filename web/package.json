@@ -16,13 +16,12 @@
     "eval": "tsx scripts/eval/run-eval.ts",
     "record": "tsx scripts/record-demo.ts",
     "reset:dispute": "tsx scripts/reset-dispute.ts",
-    "check:fallback": "tsx scripts/check-fallback.ts"
+    "check:fallback": "tsx scripts/check-fallback.ts",
+    "agent:check": "tsx scripts/agent-check.ts",
+    "check:codes": "tsx scripts/check-codes.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.71",
-    "@ai-sdk/mcp": "^2.0.66",
     "@sanity/image-url": "^2.1.1",
-    "ai": "^7.0.127",
     "next": "16.3.8",
     "next-sanity": "^13.3.4",
     "react": "19.2.8",
