@@ -12,7 +12,8 @@
     "verify:data": "tsx scripts/verify-data.ts",
     "debug:queries": "tsx scripts/debug-queries.ts",
     "debug:client": "tsx scripts/debug-client.ts",
-    "shape:demo": "tsx scripts/shape-demo.ts"
+    "shape:demo": "tsx scripts/shape-demo.ts",
+    "eval": "tsx scripts/eval/run-eval.ts"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",
