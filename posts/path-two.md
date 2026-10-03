@@ -86,7 +86,7 @@ Three rules, and the third is the one that matters:
 2. **It cannot do arithmetic.** Classification goes through TypeSafe's System One models, which return `{choice, probabilities, confidence}` — a value from a set I defined, plus how sure it is. There is no channel through which a day count could travel.
 3. **It says when it does not know.** Below 0.62 confidence the leg is marked uncertain rather than answered. In the screenshot above, *"flew to Paris 20 to 25 February"* lands at 50% and is refused. I would not have got that from a chat completion, and in this domain it matters more than fluency.
 
-Note the dependency count: the agent needs no chat-model SDK. The whole web app has four runtime dependencies and none of them is a model provider.
+Note the dependency count: the agent needs no chat-model SDK. The whole web app has five runtime dependencies and none of them is a model provider.
 
 ---
 
@@ -94,10 +94,10 @@ Note the dependency count: the agent needs no chat-model SDK. The whole web app 
 
 https://github.com/PhiBao/beyond-vibe
 
-Monorepo. `studio/` is a standalone Sanity Studio; `web/` is Next.js 16.
+Monorepo. `studio/` is a standalone Sanity Studio — 11 document types, 7 object types; `web/` is Next.js 16.
 
 ```
-studio/     Sanity Studio. 12 document types, 7 object types.
+studio/     Sanity Studio. 11 document types, 7 object types.
 web/
   src/lib/engine/     Pure TypeScript. No Sanity client, no model, no env vars.
   src/lib/agent/      Retrieve, classify, then hand off to the engine.

@@ -72,7 +72,7 @@ because **the corpus holds the rules, and never held the traveller.**
 ## Architecture
 
 ```
-studio/     Sanity Studio, standalone. 12 document types, 7 object types.
+studio/     Sanity Studio, standalone. 11 document types, 7 object types.
 web/        Next.js 16 App Router.
   src/lib/engine/     Pure TypeScript. No Sanity client, no model, no env vars.
   src/lib/agent/      The agent: retrieve, classify, then hand off to the engine.
