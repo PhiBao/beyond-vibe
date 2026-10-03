@@ -42,6 +42,7 @@ function sources(...keys: string[]): SourceSnapshot[] {
       publisher: s.publisher,
       url: s.url,
       kind: s.kind,
+      notes: s.notes ?? null,
       retrievedAt: s.retrievedAt,
     }))
 }
@@ -74,6 +75,7 @@ export function buildLocalSnapshot(): RuleSnapshot {
   const nationalityClasses: NationalityClassSnapshot[] = NATIONALITY_CLASSES.map((c) => ({
     id: docId('nationalityClass', c.key),
     label: c.label,
+    summary: c.summary ?? null,
     passports: c.passports,
     defaultPermitKey: c.defaultPermitKey ?? null,
     sources: sources(...c.sourceKeys),

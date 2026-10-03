@@ -7,7 +7,7 @@ import {defineQuery} from 'next-sanity'
  * parse. The queries below are therefore formatted with `[...]{...}` and no gap.
  */
 
-const SRC = `{"id": _id, title, publisher, url, kind, retrievedAt, locator, quote, stance}`
+const SRC = `{"id": _id, title, publisher, url, kind, notes, retrievedAt, locator, quote, stance}`
 
 /**
  * One query fetches the whole rule corpus and resolves every reference in the
@@ -18,7 +18,7 @@ const SRC = `{"id": _id, title, publisher, url, kind, retrievedAt, locator, quot
 export const RULE_SNAPSHOT_QUERY = defineQuery(`{
   "allowances": *[_type == "allowance"]{"id": _id, title, windowDays, limitDays, countingBasis, "sources": sources[]->${SRC}},
   "territories": *[_type == "territory"]{"id": _id, name, code, kind, "allowances": allowances[]->_id, "accessBands": accessBands[]{"window": {"from": window.from, "to": window.to, "note": window.note}, counted, modes, basis, "sources": sources[]->${SRC}}},
-  "nationalityClasses": *[_type == "nationalityClass"]{"id": _id, label, passports, defaultPermitKey, "sources": sources[]->${SRC}},
+  "nationalityClasses": *[_type == "nationalityClass"]{"id": _id, label, summary, passports, defaultPermitKey, "sources": sources[]->${SRC}},
   "visaRegimes": *[_type == "visaRegime"]{"id": _id, "nationalityClassId": nationalityClass->_id, "allowanceId": allowance->_id, "window": {"from": window.from, "to": window.to, "note": window.note}, visaRequired, maxDaysPerEntry, "sources": sources[]->${SRC}},
   "permitExemptions": *[_type == "permitExemption"]{"id": _id, label, kind, exemptsFromAllowance, "scopeTerritoryIds": scopeTerritories[]->_id, conditions, "sources": sources[]->${SRC}},
   "presenceRules": *[_type == "presenceRule"]{"id": _id, label, kind, counted, disputed, rationale, "sources": sources[]->${SRC}},

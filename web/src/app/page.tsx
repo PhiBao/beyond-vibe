@@ -11,7 +11,13 @@ import {runVerdict, today, type SanityItinerary} from '@/lib/sanity/verdict'
  * That is deliberate: the verdict is a pure function of (rules, itinerary), and
  * running it here means the numbers a judge reads cannot have been produced by
  * anything running in their browser.
+ *
+ * The page is forced dynamic because the in-memory snapshot cache would
+ * otherwise outlive an adjudication, and the point of the desk is that a ruling
+ * changes the number immediately.
  */
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   const asOf = today()
   const {snapshot, from} = await loadSnapshot()

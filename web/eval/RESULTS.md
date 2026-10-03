@@ -41,7 +41,7 @@ Retrieval finds the sentences. It cannot join them to a calendar. Every question
 | 16 | A week in London between two flights | 2026-10-03 | 0 used | 0 used | yes | 1/1 |
 | 17 | An overnight arrival | 2026-10-03 | 1 used | 1 used | yes | 2/2 |
 | 18 | A same-day visit | 2026-10-03 | 1 used | 1 used | yes | 2/2 |
-| 19 | February 2024, in a leap year | 2024-02-29 | 28 used | 28 used | yes | 2/2 |
+| 19 | February 2024, in a leap year | 2024-02-29 | 28 used | 28 used | yes | none |
 | 20 | February 2026, in a common year | 2026-02-28 | 27 used | 27 used | yes | 1/2 |
 | 21 | A trip from the distant past | 2026-10-03 | 0 used | 0 used | yes | 1/2 |
 | 22 | Two long trips that only collide in the middle | 2026-04-14 | 76 used | 76 used | yes | 1/2 |

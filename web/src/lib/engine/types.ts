@@ -25,6 +25,7 @@ export interface SourceSnapshot {
   publisher: string
   url: string
   kind: string
+  notes?: string | null
   retrievedAt?: string | null
   locator?: string | null
   quote?: string | null
@@ -60,6 +61,7 @@ export interface TerritorySnapshot {
 export interface NationalityClassSnapshot {
   id: string
   label: string
+  summary?: string | null
   passports: string[]
   defaultPermitKey?: string | null
   sources: SourceSnapshot[]

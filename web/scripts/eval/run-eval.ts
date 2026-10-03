@@ -238,7 +238,7 @@ async function main() {
     // traveller's own movements were never indexed, because a documentation
     // assistant does not index them.
     const corpusHoldsHistory = chunks.some((c) =>
-      testCase.itinerary.trips.some((t) => c.text.includes(t.label)),
+      testCase.itinerary.trips.some((t) => (t.label ? c.text.includes(t.label) : false)),
     )
 
     rows.push({

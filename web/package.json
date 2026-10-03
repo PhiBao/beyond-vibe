@@ -16,7 +16,10 @@
     "eval": "tsx scripts/eval/run-eval.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.71",
+    "@ai-sdk/mcp": "^2.0.66",
     "@sanity/image-url": "^2.1.1",
+    "ai": "^7.0.127",
     "next": "16.3.8",
     "next-sanity": "^13.3.4",
     "react": "19.2.8",
@@ -35,5 +38,10 @@
     "typescript": "^5",
     "vitest": "^5.0.3"
   },
-  "packageManager": "pnpm@11.1.1"
+  "packageManager": "pnpm@11.1.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
 }
