@@ -1,7 +1,7 @@
 *This is a submission for the [Sanity Challenge, Path Two: Vibe-Code Something Strange](https://dev.to/challenges/sanity-2026-09-16)*
 
-**Live:** https://web-eight-amber-6zft3r0kdf.vercel.app
-**Code:** https://github.com/PhiBao/beyond-vibe
+**Live:** https://ninety-europe.vercel.app
+**Code:** https://github.com/PhiBao/ninety
 **Sanity project:** `jvgi63fz` · dataset `production` · Studio: https://beyond-vibe.sanity.studio
 
 ---
@@ -20,13 +20,13 @@ It is a day accountant for the 90-in-any-180 rule. You give it your trips; it re
 
 Then it shows its work: every calendar day as a mark on a strip, colour-coded by whether it was charged, and clicking any day gives you the rule that decided it and the authority behind it.
 
-![The verdict](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/01-verdict.png)
+![The verdict](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/verdict.png)
 
 ### The three things it does that a calculator cannot
 
 **1. It names the day, not just the number.**
 
-![The day you went over](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/02-breach-day.png)
+![The day you went over](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/breach-day.png)
 
 Attribution is a real algorithm, not a caption. On the breach day the engine finds the rolling window, works out which days pushed the count past the limit, and maps them back to the trips that contained them.
 
@@ -54,7 +54,7 @@ That is the only behaviour that makes it safe to trust at all. A confident wrong
 
 When the sources genuinely conflict, Ninety refuses to classify the day and reports a range. This one is real: *does a layover that clears border control count as a day in the area?* The border-crossing guidance says admission at a border is entry into the territory. The visa policy is framed around *staying*, and a same-day transit is not a stay.
 
-![The desk](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/08-the-desk.png)
+![The desk](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/the-desk.png)
 
 The second demo sits at **exactly 90 of 90** with a landed transit booked for three days' time. Ninety will not pick a side, so the answer is a range and the headline stays honest.
 
@@ -62,17 +62,17 @@ A person can then rule. That ruling is written as **precedent** — typed, dated
 
 Here it is flipping on camera — *inside the limit* becomes *crosses the limit on 6 October* the moment a person rules that the day counts:
 
-![After the ruling](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/10-after-ruling.png)
+![After the ruling](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/after-ruling.png)
 
 The whole run, 48 seconds:
 
-https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/ninety-demo.mp4
+https://raw.githubusercontent.com/PhiBao/ninety/main/docs/ninety-demo.mp4
 
 It is a scripted recording against the deployed app, and the dataset is reset afterwards, so you will find the desk open.
 
 ### And then there is the agent
 
-![The agent](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/15-agent.png)
+![The agent](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/the-agent.png)
 
 Counting your own dates is easy. Deciding whether an airport transit counts is not — which is exactly the judgement the structured form was asking people to make before it would help them. So you can also just write it down:
 
@@ -92,7 +92,7 @@ Note the dependency count: the agent needs no chat-model SDK. The whole web app 
 
 ## Code
 
-https://github.com/PhiBao/beyond-vibe
+https://github.com/PhiBao/ninety
 
 Monorepo. `studio/` is a standalone Sanity Studio — 11 document types, 7 object types; `web/` is Next.js 16.
 
@@ -257,7 +257,7 @@ Two systems, the same corpus, 23 adversarial histories with hand-computed expect
 | Named the exact breach date | 1/1 | 0/1 |
 | Refused instead of guessing | 2/2 | n/a |
 
-Full results, including why each case is hard: [`web/eval/RESULTS.md`](https://github.com/PhiBao/beyond-vibe/blob/main/web/eval/RESULTS.md)
+Full results, including why each case is hard: [`web/eval/RESULTS.md`](https://github.com/PhiBao/ninety/blob/main/web/eval/RESULTS.md)
 
 The keyword arm is not handicapped by a weak index. It sees the same territory records, the same presence rules, the same permit exemptions, flattened into prose, and scores BM25 over them. It returns the right *sentences* most of the time. It just cannot produce a number, because:
 

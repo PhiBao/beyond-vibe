@@ -19,7 +19,7 @@ import {defineBlueprint, defineCorsOrigin, defineDocumentFunction} from '@sanity
  */
 export default defineBlueprint({
   values: {
-    appOrigin: 'https://web-eight-amber-6zft3r0kdf.vercel.app',
+    appOrigin: 'https://ninety-europe.vercel.app',
     organizationId: 'ovihgdwkx',
   },
 

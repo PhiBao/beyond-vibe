@@ -6,7 +6,7 @@
  */
 import {chromium} from 'playwright'
 
-const BASE = process.env.BASE_URL ?? 'https://web-eight-amber-6zft3r0kdf.vercel.app'
+const BASE = process.env.BASE_URL ?? 'https://ninety-europe.vercel.app'
 
 const browser = await chromium.launch()
 const page = await browser.newPage({viewport: {width: 1280, height: 1000}, deviceScaleFactor: 2})

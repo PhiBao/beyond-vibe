@@ -14,8 +14,11 @@ immigration"* — and an agent works out what it means before the engine counts 
 > Every short-stay calculator tells you how many days you have used. None of them
 > tell you the day you went over.
 
-Live: **https://web-eight-amber-6zft3r0kdf.vercel.app**
+Live: **https://ninety-europe.vercel.app**
+Code: **https://github.com/PhiBao/ninety**
 Sanity project: `jvgi63fz` · dataset `production` · Studio at https://beyond-vibe.sanity.studio
+
+MIT licensed. See [LICENSE](./LICENSE).
 
 ---
 
@@ -71,6 +74,85 @@ because **the corpus holds the rules, and never held the traveller.**
 
 ## Architecture
 
+The one diagram worth having. Three actors, and the shape of the arrows is the
+whole design: **information flows left to the model, and numbers only ever come
+out of the engine.**
+
+```mermaid
+flowchart LR
+    subgraph client["Browser"]
+        direction TB
+        UI["Ninety<br/><small>day ledger</small>"]
+        ASK["Describe a trip<br/><small>in plain language</small>"]
+    end
+
+    subgraph web["Next.js · server only"]
+        direction TB
+        DESC["agent/describe<br/><b>deterministic</b><br/><small>dates · mode · clause</small>"]
+        AGENT["agent/resolve<br/><small>one request per stay</small>"]
+        SNAP["sanity/snapshot<br/><small>30s TTL</small>"]
+        ENGINE["engine/evaluate<br/><b>no model · no network</b>"]
+    end
+
+    subgraph external["External"]
+        direction TB
+        CTX["Sanity Context<br/><small>hosted MCP · groq_query</small>"]
+        JEV["TypeSafe<br/><small>System One</small>"]
+    end
+
+    subgraph sanity["Sanity project jvgi63fz"]
+        direction TB
+        CORPUS[("rules corpus<br/><small>bands · presence · sources</small>")]
+        FUNC["document function<br/><small>the guard</small>"]
+        APP["Studio"]
+    end
+
+    ASK ==>|"free text"| DESC
+    DESC ==> AGENT
+
+    AGENT ==>|"1 · candidates<br/><small>never invented</small>"| CTX
+    CTX ==> CORPUS
+    AGENT ==>|"2 · classify<br/><small>choice + confidence</small>"| JEV
+    AGENT ==>|"3 · resolved itinerary"| ENGINE
+    SNAP ==> ENGINE
+    CORPUS ==> SNAP
+
+    ENGINE ==>|"verdict · every number"| UI
+
+    FUNC -.->|"adjudicated ⇒ precedent"| CORPUS
+    CORPUS -.-> FUNC
+
+    style ENGINE fill:#16233d,stroke:#5b8cff,stroke-width:2px
+    style DESC fill:#16233d,stroke:#5b8cff,stroke-width:2px
+    style AGENT fill:#141821,stroke:#7d8590
+    style CTX fill:#141821,stroke:#7d8590
+    style JEV fill:#141821,stroke:#7d8590
+    style CORPUS fill:#12291f,stroke:#6cc49c,stroke-width:2px
+    style FUNC fill:#2b2413,stroke:#f0c86c,stroke-width:2px
+```
+The same diagram as a static image, in case your renderer does not do Mermaid:
+
+![Architecture: free text goes to a deterministic parser, then the agent retrieves
+candidates from Sanity Context and classifies them with a typed judgment model,
+while the engine — no model, no network — produces every number. A document
+function guarantees an adjudicated dispute always has a precedent behind it.
+](docs/architecture.png)
+
+
+Read it as a claim rather than a picture:
+
+- **Blue is deterministic.** The two blue boxes are the only ones allowed to be
+  authoritative. `describe.ts` extracts dates with no model at all, and `evaluate`
+  makes every number.
+- **Grey is advisory.** Context retrieves, the judgment model classifies. Neither
+  can produce a day count, and neither can name a place outside the corpus.
+- **Green is the content.** Everything the rules know, with every classification
+  resolving to a source.
+- **The dashed loop is the invariant.** A ruling becomes a precedent, and the
+  precedent changes what the engine computes next time.
+
+### In the filesystem
+
 ```
 infra/      Sanity Blueprints. The CORS origin and a document function.
 studio/     Sanity Studio, standalone. 11 document types, 7 object types.
@@ -98,20 +180,10 @@ same journey as a train.
 ### The agent has exactly one job
 
 Someone describes a trip the way they would to a friend. The agent works out what
-that trip *is*. It has no authority over what it *costs*.
+that trip *is*. It has no authority over what it *costs* — the split is the grey
+and blue boxes in the diagram above.
 
-```
-traveller's words
-     │
-     ├─ Sanity Context (MCP)  →  the candidate set. Retrieved, never invented.
-     │
-     ├─ TypeSafe System One   →  typed classification + calibrated confidence.
-     │                            A value from a set we defined, not prose.
-     │
-     └─ the engine            →  every number in the answer
-```
-
-Three properties follow from that split, and each one was bought by a bug:
+Three properties follow from it, and each one was bought by a bug:
 
 **The agent cannot invent a place.** The territory list comes from
 `groq_query` against Sanity Context, so if a place is not in the corpus there is
@@ -128,7 +200,7 @@ is the behaviour I want in this domain and would not have got from a
 chat completion.
 
 Note the dependency count: the agent needs no chat-model SDK. `dependencies` is
-four packages, none of which is a model provider.
+five packages, none of which is a model provider.
 
 ### The schema is the argument
 
@@ -222,9 +294,15 @@ Blueprints refuses to adopt a hostname that already exists, and the deployment i
 load-bearing for the agent anyway: Sanity Context refuses to serve a dataset whose
 Studio has never been deployed.
 
+## Licence
+
+MIT — [LICENSE](./LICENSE).
+
 ## What this is not
 
 Not legal advice, and not a complete immigration reference. It is an estimate built
 from cited public guidance, covering the Schengen short-stay allowance for a
 handful of passport classes. It refuses rather than guesses outside that coverage,
-which is the only behaviour that makes it safe to trust at all.
+which is the only behaviour that makes it safe to trust at all — but a wrong answer
+here costs someone money, so verify anything that matters against the relevant
+authority.

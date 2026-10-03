@@ -1,9 +1,9 @@
 *This is a submission for the [Sanity Challenge, Path One: Ship an Agent That Queries Real Content](https://dev.to/challenges/sanity-2026-09-16)*
 
 **The agent's MCP endpoint:** `https://api.sanity.io/v1/context/organizations/ovihgdwkx/mcp/ninety`
-**Live app:** https://web-eight-amber-6zft3r0kdf.vercel.app
-**Context evidence page:** https://web-eight-amber-6zft3r0kdf.vercel.app/context
-**Code:** https://github.com/PhiBao/beyond-vibe
+**Live app:** https://ninety-europe.vercel.app
+**Context evidence page:** https://ninety-europe.vercel.app/context
+**Code:** https://github.com/PhiBao/ninety
 **Sanity project:** `jvgi63fz` · dataset `production` · Studio: https://beyond-vibe.sanity.studio
 
 ---
@@ -26,7 +26,7 @@ The model may retrieve, classify, explain and cite. Every figure it reports come
 
 Type **"three weeks on Tenerife, then an 8 hour airport layover where I never cleared immigration"** and it works out what that is, then what it costs.
 
-![The agent](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/15-agent.png)
+![The agent](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/the-agent.png)
 
 It resolves to three separate reads: **Bulgaria by train — 10 days counted**, from the date-banded rule that opened its land crossings on 31 December 2024. An **airport transit with no place named — no days counted**, at 100%. And in between, a leg it is only about 50% sure about, so it refuses that one.
 
@@ -75,7 +75,7 @@ The agent's knowledge is a hosted, read-only MCP endpoint. Not a hardcoded promp
 
 The `/context` page calls the endpoint server-side and prints what came back, including its failure modes. Everything on it was fetched when you loaded the page.
 
-![Sanity Context](https://raw.githubusercontent.com/PhiBao/beyond-vibe/main/web/demo/13-context.png)
+![Sanity Context](https://raw.githubusercontent.com/PhiBao/ninety/main/docs/stills/sanity-context.png)
 
 Reproduce it:
 
@@ -132,7 +132,7 @@ Two systems, the same corpus, 23 adversarial histories with hand-computed expect
 | Named the exact breach date | 1/1 | 0/1 |
 | Refused instead of guessing | 2/2 | n/a |
 
-Full results with the reasoning for each case: [`web/eval/RESULTS.md`](https://github.com/PhiBao/beyond-vibe/blob/main/web/eval/RESULTS.md)
+Full results with the reasoning for each case: [`web/eval/RESULTS.md`](https://github.com/PhiBao/ninety/blob/main/web/eval/RESULTS.md)
 
 The keyword arm is not handicapped. It is given the same territory records, the same presence rules, the same permit exemptions and the same precedents, flattened into prose, and it scores BM25 over them. It frequently retrieves the right paragraph.
 
@@ -156,7 +156,7 @@ Ingesting those documents as a Knowledge Base is the next step, and it is the st
 
 ## Code
 
-https://github.com/PhiBao/beyond-vibe
+https://github.com/PhiBao/ninety
 
 ```
 infra/sanity.blueprint.ts        infrastructure: CORS origin + the guard function
