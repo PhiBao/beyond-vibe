@@ -90,8 +90,11 @@ export async function POST(request: Request) {
       ? `Adjudicated by ${decidedBy.trim()}: presence of this kind counts as a day in the area. Scoped to future travel only — days already counted are not revisited.`
       : `Adjudicated by ${decidedBy.trim()}: presence of this kind does not count as a day in the area. Scoped to future travel only — days already counted are not revisited.`
 
+  let precedentIdForError = precedentId
+
+  try {
   await client.createOrReplace({
-    _id: precedentId,
+    _id: precedentIdForError,
     _type: 'precedent',
     key: `ruling:${presenceKind}`,
     label:
@@ -173,6 +176,22 @@ export async function POST(request: Request) {
   }))
 
   return NextResponse.json({ok: true, asOf, itineraries: verdicts, disputes})
+  } catch (error) {
+    // A ruling that cannot be written is a visible failure, not a silent one.
+    // Silently swallowing this is exactly how an "adjudicated" precedent ended up
+    // in the dataset while the dispute it belonged to stayed open.
+    const message = (error as Error).message
+    console.error('[ninety] adjudication failed:', message)
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          'The ruling could not be saved. The desk needs write access to the Sanity dataset, which this deployment does not currently have.',
+        detail: message,
+      },
+      {status: 503},
+    )
+  }
 }
 
 export async function GET() {

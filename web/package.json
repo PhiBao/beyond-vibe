@@ -15,7 +15,8 @@
     "shape:demo": "tsx scripts/shape-demo.ts",
     "eval": "tsx scripts/eval/run-eval.ts",
     "record": "tsx scripts/record-demo.ts",
-    "reset:dispute": "tsx scripts/reset-dispute.ts"
+    "reset:dispute": "tsx scripts/reset-dispute.ts",
+    "check:fallback": "tsx scripts/check-fallback.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.71",

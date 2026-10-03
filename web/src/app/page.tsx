@@ -1,5 +1,6 @@
 import {NinetyApp, type AppItinerary} from '@/components/ninety-app'
 import type {DisputeView} from '@/components/dispute-desk'
+import {LOCAL_DISPUTES, localSanityItineraries} from '@/lib/data/demo-itineraries'
 import {projectId, readClient} from '@/lib/sanity/client'
 import {DEMO_ITINERARIES_QUERY, DISPUTES_QUERY} from '@/lib/sanity/queries'
 import {loadSnapshot} from '@/lib/sanity/snapshot'
@@ -18,12 +19,34 @@ import {runVerdict, today, type SanityItinerary} from '@/lib/sanity/verdict'
  */
 export const dynamic = 'force-dynamic'
 
+/**
+ * Read content from Sanity, degrading to the bundled copy instead of failing.
+ *
+ * A demo that 500s because a token expired is not a demo. The fallback is not a
+ * mock: the engine is pure, the local corpus is the same content under the same
+ * document IDs, and the footer reports which source served the answer.
+ */
+async function loadContent(): Promise<{
+  itineraries: SanityItinerary[]
+  disputes: DisputeView[]
+  degraded: boolean
+}> {
+  try {
+    const itineraries = await readClient.fetch<SanityItinerary[]>(DEMO_ITINERARIES_QUERY)
+    if (!itineraries || itineraries.length === 0) throw new Error('no itineraries in Sanity')
+
+    const disputes = await readClient.fetch<DisputeView[]>(DISPUTES_QUERY)
+    return {itineraries, disputes: disputes ?? [], degraded: false}
+  } catch (error) {
+    console.warn('[ninety] Serving the bundled demo content:', (error as Error).message)
+    return {itineraries: localSanityItineraries(), disputes: LOCAL_DISPUTES as DisputeView[], degraded: true}
+  }
+}
+
 export default async function Home() {
   const asOf = today()
   const {snapshot, from} = await loadSnapshot()
-
-  const itineraries = (await readClient.fetch<SanityItinerary[]>(DEMO_ITINERARIES_QUERY)) ?? []
-  const disputes = (await readClient.fetch<DisputeView[]>(DISPUTES_QUERY)) ?? []
+  const {itineraries, disputes, degraded} = await loadContent()
 
   const appItineraries: AppItinerary[] = itineraries
     .map((itinerary) => ({
@@ -48,7 +71,7 @@ export default async function Home() {
       disputes={disputes}
       territories={territories}
       asOf={asOf}
-      dataSource={from}
+      dataSource={degraded ? 'local' : from}
       projectId={projectId}
     />
   )
