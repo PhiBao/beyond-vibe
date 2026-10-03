@@ -159,6 +159,8 @@ Ingesting those documents as a Knowledge Base is the next step, and it is the st
 https://github.com/PhiBao/beyond-vibe
 
 ```
+infra/sanity.blueprint.ts        infrastructure: CORS origin + the guard function
+infra/functions/                 a Sanity Function that enforces the invariant
 web/src/lib/agent/describe.ts    free text → dated stays, deterministically
 web/src/lib/agent/typesafe.ts    typed client for the System One primitives
 web/src/lib/agent/resolve.ts     retrieve candidates, classify, hand off
@@ -188,6 +190,14 @@ There are 56 unit tests. The ones that matter most here are about the free-text 
 **`\s` in a template literal collapses to `s`.** My date-stripping regexes compiled into "match a literal s" and silently removed nothing, so the classifier was being handed *"layover on 3 June 2026"* with the date still in it. A regex that silently matches nothing is worse than one that throws.
 
 **Two evaluation cases were passing for the wrong reason.** I had written a territory code as `es-canary`, which is a document *key*; the code is `XCI`. The engine's response to an unknown territory is a warning and zero charged days — so the case passed because the Canary days had been dropped rather than classified. The number was right and the reasoning was nonsense. `pnpm check:codes` now fails the build if any case contains a dropped stay.
+
+**A Sanity Function that guards the invariant failed in three ways that all looked like success.** The agent's correctness rests on a ruling being recorded as a precedent, so I added a document function to enforce that wherever the dispute is adjudicated — including in the Studio, bypassing the app. It wrote the precedent fine, then:
+
+- `client.patch()` is lazy in `@sanity/client` v8. The handler awaited it, logged "attached precedent to dispute", and changed nothing.
+- A transaction id derived from the document id looks like idempotency. Sanity remembers transaction ids permanently, so the second adjudication returned `transactionAlreadyExistsError` and the function failed forever after, silently.
+- The guard read a denormalised `presenceKind` that the document does not have, so it declined to act on a dispute whose `subjectKind` was plainly `presence_kind`. It now resolves the kind through the reference.
+
+That third one generalises. A guard that refuses because it looked in the wrong place is worse than no guard: it turns a loud failure into a quiet one. Every check in this repo looks at what the system *did*, not at whether it reported success.
 
 **I had Iceland in the Schengen Area.** It is EEA, not Schengen, and my corpus said otherwise because I had used a shared helper that stamped the founding date onto every state. Reykjavík days were being charged against 90/180 — a mistake a lot of tools make, made silently, in the one file I was treating as ground truth.
 

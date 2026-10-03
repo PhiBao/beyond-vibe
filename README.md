@@ -72,6 +72,7 @@ because **the corpus holds the rules, and never held the traveller.**
 ## Architecture
 
 ```
+infra/      Sanity Blueprints. The CORS origin and a document function.
 studio/     Sanity Studio, standalone. 11 document types, 7 object types.
 web/        Next.js 16 App Router.
   src/lib/engine/     Pure TypeScript. No Sanity client, no model, no env vars.
@@ -163,6 +164,7 @@ Three modelling decisions carry the weight:
 ```bash
 pnpm --dir studio install
 pnpm --dir web install
+pnpm --dir infra install
 
 pnpm --dir studio dev            # Studio on :3333
 pnpm --dir web dev               # app on :3000
@@ -177,6 +179,10 @@ pnpm --dir web agent:check       # the agent on five awkward descriptions
 pnpm --dir web seed              # write the corpus into Sanity (idempotent)
 pnpm --dir web verify:data       # prove Sanity serves a usable snapshot
 pnpm --dir web record            # drive the deployed app and capture the video
+
+pnpm --dir infra bp:plan         # preview infrastructure changes
+pnpm --dir infra bp:deploy       # apply them
+pnpm --dir infra bp:logs         # what the guard has been doing
 ```
 
 `check:codes` exists because a territory mismatch is **invisible by construction**:
@@ -199,6 +205,22 @@ TYPESAFE_API_KEY              # enables POST /api/ask
 The Context and agent integrations are **optional by design**. The verdict does not
 depend on either: it comes from GROQ plus the deterministic engine. `/context` and
 `/api/ask` report plainly when they are not configured rather than pretending.
+
+## Infrastructure is declared, not clicked
+
+`infra/sanity.blueprint.ts` declares the CORS origin the app reads through and a
+document function. `blueprints plan` shows the diff before anything is applied.
+
+The function enforces the product's central invariant in the data layer: **any
+dispute marked `adjudicated` has a `precedent` behind it**, whoever adjudicated
+it. That path is real — a dispute can be edited in the Studio rather than through
+the desk — and it is precisely how this build once shipped a ruling that wrote
+its precedent and left the dispute open while the product looked fine.
+
+The Studio application is not in the blueprint on purpose. `sanity deploy` owns it,
+Blueprints refuses to adopt a hostname that already exists, and the deployment is
+load-bearing for the agent anyway: Sanity Context refuses to serve a dataset whose
+Studio has never been deployed.
 
 ## What this is not
 

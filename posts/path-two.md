@@ -97,6 +97,7 @@ https://github.com/PhiBao/beyond-vibe
 Monorepo. `studio/` is a standalone Sanity Studio — 11 document types, 7 object types; `web/` is Next.js 16.
 
 ```
+infra/      Sanity Blueprints — the CORS origin and a document function.
 studio/     Sanity Studio. 11 document types, 7 object types.
 web/
   src/lib/engine/     Pure TypeScript. No Sanity client, no model, no env vars.
@@ -217,6 +218,32 @@ A `presenceRule` can be marked `disputed`. When it is, the engine will not class
 
 ---
 
+## The infrastructure is declared too
+
+`infra/sanity.blueprint.ts` holds the CORS origin the app reads through and a document function, and `blueprints plan` shows the diff before anything is applied.
+
+The function is the interesting part. Ninety's claim is that a ruling is not a message — it is a typed, dated, scoped precedent that every later calculation reads. The desk writes that precedent. But a dispute can also be adjudicated by editing the document in the Studio, and that path can leave a dispute marked `adjudicated` with nothing behind it.
+
+Which is exactly the bug this build shipped. A partial patch wrote the precedent and left the dispute open, and the product looked correct until someone checked the dataset. So the invariant now lives in the data layer:
+
+> any dispute marked `adjudicated` has a `precedent` behind it, whoever adjudicated it
+
+Verified by hand, twice: a Studio-style patch that leaves the broken state is repaired within about thirteen seconds, the precedent carries the presence rule's own two sources so its citations still resolve, and a second ruling supersedes the first rather than overwriting it.
+
+### Three ways to fail while building a guard
+
+Every one of these logged success and did nothing.
+
+**`client.patch()` is lazy in `@sanity/client` v8.** The handler awaited it, logged *"attached precedent to dispute"*, and changed nothing. Writes now go through `mutate()`, which takes an array and returns a transaction result — either the write happened or the call threw.
+
+**A transaction id derived from the document id looks like idempotency and is a trap.** Sanity remembers transaction ids permanently, so the second adjudication of the same dispute came back `transactionAlreadyExistsError` and the function failed forever after, silently. Convergence now comes from `createOrReplace` against a date-keyed precedent id, which is naturally idempotent; the transaction id only has to be unique.
+
+**The guard read a field the document does not have.** It looked for a denormalised `presenceKind`, found nothing, and declined to act — on a dispute whose `subjectKind` was very plainly `presence_kind`. It now resolves the kind through the reference.
+
+That last one is the general lesson, and it is why I think a guard that refuses because it looked in the wrong place is worse than no guard at all: it converts a loud failure into a quiet one. Every check in this repo earns its place by looking at **what the system actually did** rather than at whether it reported success.
+
+---
+
 ## Did the structured content actually matter?
 
 The challenge says: *"If a keyword search would have gotten you the same answer, aim higher."* So I measured it.
@@ -246,6 +273,7 @@ Asking "am I still legal" is not a retrieval problem. It is a join between the r
 - **Dataset:** `production`
 - **Contents:** 5 sources, 1 allowance, 36 territories with date-banded access, 3 nationality classes, 3 visa regimes, 5 permit exemptions, 6 presence rules, 2 demo itineraries with 17 trips, 1 open dispute.
 - **Reproduce it:** `pnpm --dir web seed && pnpm --dir web verify:data`
+**Infrastructure:** `pnpm --dir infra bp:plan && pnpm --dir infra bp:deploy`
 
 Every rule in the dataset carries a `sourceRef` pointing at a real document with a publisher, a URL and a retrieval date. Clicking any day in the ledger shows its authorities. Nothing in Ninety's reasoning is unattributed.
 
